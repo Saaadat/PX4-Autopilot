@@ -43,6 +43,9 @@
 #ifndef VTOL_TYPE_H
 #define VTOL_TYPE_H
 
+#include <uORB/Subscription.hpp>
+#include <uORB/topics/pusher_failure_status.h>
+
 #include <drivers/drv_hrt.h>
 #include <lib/mathlib/mathlib.h>
 #include <px4_platform_common/module_params.h>
@@ -271,6 +274,7 @@ public:
 	void handleEkfResets();
 
 protected:
+	uORB::SubscriptionData<pusher_failure_status_s> _pusher_failure_status_sub{ORB_ID(pusher_failure_status)};
 	VtolAttitudeControl *_attc;
 	mode _common_vtol_mode;
 

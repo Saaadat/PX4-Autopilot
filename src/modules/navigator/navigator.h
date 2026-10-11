@@ -46,6 +46,7 @@
 #include "land.h"
 #include "precland.h"
 #include "loiter.h"
+#include "PusherFailureRecovery.hpp"
 #include "mission_route_cache.h"
 #include "mission.h"
 #include "navigator_mode.h"
@@ -71,6 +72,7 @@
 #include <uORB/topics/telemetry_status.h>
 
 #include <lib/perf/perf_counter.h>
+#include <px4_platform_common/atomic.h>
 #include <px4_platform_common/events.h>
 #include <px4_platform_common/module.h>
 #include <px4_platform_common/module_params.h>
@@ -365,6 +367,13 @@ public:
 	void trigger_hagl_failsafe(uint8_t nav_state);
 
 private:
+	friend class PusherFailureTestPeer;
+	void update_pusher_failure();
+	px4::atomic_bool _pusher_failure_requested{false};
+	PusherFailureRecovery _pusher_failure{};
+	position_setpoint_s _pusher_failure_loiter{};
+	hrt_abstime _pusher_failure_last_command{0};
+	uORB::Publication<pusher_failure_status_s> _pusher_failure_pub{ORB_ID(pusher_failure_status)};
 
 	orb_sub_t _local_pos_sub{ORB_SUB_INVALID};
 	orb_sub_t _mission_sub{ORB_SUB_INVALID};

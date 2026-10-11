@@ -244,6 +244,14 @@ bool VtolType::isMinAltBreached()
 
 bool VtolType::isUncommandedDescent()
 {
+	const auto &recovery = _pusher_failure_status_sub.get();
+
+	if (recovery.state == pusher_failure_status_s::STATE_GLIDING && recovery.pusher_failed
+	    && hrt_elapsed_time(&recovery.timestamp) < 1_s) {
+		_quadchute_ref_alt = NAN;
+		return false;
+	}
+
 	const float current_altitude = -_local_pos->z + _local_pos->ref_alt;
 
 	if (_param_vt_qc_alt_loss.get() > FLT_EPSILON && _local_pos->z_valid && _local_pos->z_global

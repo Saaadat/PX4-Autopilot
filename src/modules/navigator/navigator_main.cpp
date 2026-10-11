@@ -1105,6 +1105,8 @@ void Navigator::run()
 			reset_triplets();
 		}
 
+		update_pusher_failure();
+
 		if (_pos_sp_triplet_updated) {
 			publish_position_setpoint_triplet();
 		}
@@ -1568,6 +1570,16 @@ int Navigator::custom_command(int argc, char *argv[])
 		return 1;
 	}
 
+	if (!strcmp(argv[0], "pusher_failure")) {
+		if (argc != 1) {
+			return print_usage("pusher_failure takes no arguments; height is VT_FW_QC_HMAX");
+		}
+
+		get_instance<Navigator>(desc)->_pusher_failure_requested.store(true);
+		PX4_INFO("Pusher failure request queued; Navigator will report acceptance or rejection");
+		return 0;
+	}
+
 	if (!strcmp(argv[0], "fencefile")) {
 		get_instance<Navigator>(desc)->load_fence_from_file(GEOFENCE_FILENAME);
 		return 0;
@@ -1975,6 +1987,7 @@ controller.
 
 	PRINT_MODULE_USAGE_NAME("navigator", "controller");
 	PRINT_MODULE_USAGE_COMMAND("start");
+	PRINT_MODULE_USAGE_COMMAND_DESCR("pusher_failure", "inject pusher failure in FW Hold; glide to VT_FW_QC_HMAX then quadchute and land");
 	PRINT_MODULE_USAGE_COMMAND_DESCR("fencefile", "load a geofence file from SD card, stored at etc/geofence.txt");
 #if CONFIG_NAVIGATOR_ADSB_FAKE_TRAFFIC
 	PRINT_MODULE_USAGE_COMMAND_DESCR("fake_traffic", "run synthetic DAA traffic; use 'navigator fake_traffic help'");

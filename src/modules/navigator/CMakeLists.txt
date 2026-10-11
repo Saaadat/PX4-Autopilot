@@ -61,6 +61,7 @@ endif()
 
 set(NAVIGATOR_SOURCES
 	navigator_main.cpp
+	pusher_failure.cpp
 	navigator_mode.cpp
 	full_mission_cache.cpp
 	mission_route_cache.cpp

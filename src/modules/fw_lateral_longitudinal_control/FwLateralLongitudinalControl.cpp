@@ -906,6 +906,13 @@ void FwLateralLongitudinalControl::updateLongitudinalControlConfiguration(const 
 		_long_configuration.throttle_max = _param_fw_thr_max.get();
 	}
 
+	if (PX4_ISFINITE(configuration_in.throttle_min) && PX4_ISFINITE(configuration_in.throttle_max)
+	    && configuration_in.throttle_min <= 0.f && configuration_in.throttle_max <= 0.f) {
+		// An explicit motor-off configuration (gliding) overrides the normal idle-throttle floor.
+		_long_configuration.throttle_min = 0.f;
+		_long_configuration.throttle_max = 0.f;
+	}
+
 	if (PX4_ISFINITE(configuration_in.climb_rate_target)) {
 		_long_configuration.climb_rate_target = math::max(0.0f, configuration_in.climb_rate_target);
 	} else {

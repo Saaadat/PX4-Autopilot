@@ -74,6 +74,7 @@ private:
 
 	vtol_mode _vtol_mode{vtol_mode::MC_MODE};			/**< vtol flight mode, defined by enum vtol_mode */
 
+	bool _pusher_failed{false};
 	float _pusher_throttle{0.0f};
 	float _airspeed_trans_blend_margin{0.0f};
 	hrt_abstime _last_time_pusher_transition_update{0};
@@ -86,4 +87,5 @@ private:
 					(ParamFloat<px4::params::FW_PSP_OFF>) _param_fw_psp_off
 				       )
 };
+
 #endif

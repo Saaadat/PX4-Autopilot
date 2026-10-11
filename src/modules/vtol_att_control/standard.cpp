@@ -64,6 +64,16 @@ Standard::parameters_update()
 
 void Standard::update_vtol_state()
 {
+	const bool recovery_updated = _pusher_failure_status_sub.update();
+
+	if (!_v_control_mode->flag_armed) {
+		_pusher_failed = false;
+
+	} else if (recovery_updated && _pusher_failure_status_sub.get().pusher_failed
+		   && hrt_elapsed_time(&_pusher_failure_status_sub.get().timestamp) < 1_s) {
+		_pusher_failed = true;
+	}
+
 	/* After flipping the switch the vehicle will start the pusher (or tractor) motor, picking up
 	 * forward speed. After the vehicle has picked up enough speed the rotors shutdown.
 	 * For the back transition the pusher motor is immediately stopped and rotors reactivated.
@@ -76,7 +86,7 @@ void Standard::update_vtol_state()
 		_vtol_mode = vtol_mode::MC_MODE;
 		_pusher_throttle = 0.0f;
 
-	} else if (!_attc->is_fixed_wing_requested()) {
+	} else if (!_attc->is_fixed_wing_requested() || (_pusher_failed && _vtol_mode == vtol_mode::MC_MODE)) {
 
 		// the transition to fw mode switch is off
 		if (_vtol_mode == vtol_mode::MC_MODE) {
@@ -364,6 +374,11 @@ void Standard::fill_actuator_outputs()
 		_torque_setpoint_1->xyz[2] = _vehicle_torque_setpoint_virtual_fw->xyz[2];
 		_thrust_setpoint_0->xyz[0] = _vehicle_thrust_setpoint_virtual_fw->xyz[0];
 		break;
+	}
+
+	if (_pusher_failed) {
+		// NAN explicitly stops the forward motor; lift thrust and control surfaces remain available.
+		_thrust_setpoint_0->xyz[0] = NAN;
 	}
 }
 
